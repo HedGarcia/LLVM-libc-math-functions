@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <bitset>
 #include <string>
-#include "C:\src\llvm-project\libc\utils\FPUtil\FloatProperties.h"
+#include "C:/Users/hedingarcia/source/repos/headerFiles/FloatProperties.h"
 using namespace std;
 
 template <typename T>
@@ -19,18 +19,17 @@ void printBitSet(T x) {
     cout << endl;
 }
 
-template <typename T>
-struct precisionFP {
+template <typename T> struct FPBits {
     typedef __llvm_libc::fputil::FloatProperties<T> FloatProp;
     typedef typename FloatProp::BitsType BitsType;
 private:
     BitsType valueFP;
 public:
-    precisionFP() {
+    FPBits() {
         valueFP = 0;
     }
 
-    precisionFP(BitsType valueFP) {
+    FPBits(BitsType valueFP) {
         this->valueFP = valueFP;
     }
 
@@ -44,35 +43,30 @@ public:
     }
 
     BitsType getMantissa() {
-        BitsType mMask = FloatProp::mantissaMask;
-        return valueFP & mMask;
+        return valueFP & FloatProp::mantissaMask;
     }
 
     // Use the number of bits of the Mantissa for the Exponent's position.
     void setExponent(BitsType expVal) {
         valueFP &= ~(FloatProp::exponentMask);
-        unsigned int shiftNum = FloatProp::mantissaWidth;
-        valueFP |= (expVal << shiftNum);
+        valueFP |= (expVal << FloatProp::mantissaWidth);
     }
 
     // Move to the end of the bit sequence.
     BitsType getExponent() {
-        BitsType eMask = FloatProp::exponentMask;
-        unsigned int shiftNum = FloatProp::mantissaWidth;
-        return ((valueFP  & eMask) >> shiftNum);
+        return ((valueFP  & FloatProp::exponentMask) >> FloatProp::mantissaWidth);
     }
 
     // Will be assigned to the highest order bit.
     void setSign(bool signVal) {
         valueFP &= ~(FloatProp::signMask);
-        BitsType sign = (signVal) ? ((BitsType)1 << (sizeof(valueFP)*8-1)) : 0;
+        BitsType sign = (BitsType)signVal << (sizeof(valueFP)*8-1);
         valueFP |= sign;
     }
 
     // Move to the end of the bit sequence so a single value is returned.
     bool getSign() {
-        BitsType sMask = FloatProp::signMask;
-        return ((valueFP & sMask) >> (sizeof(valueFP) * 8 - 1));
+        return ((valueFP & FloatProp::signMask) >> (sizeof(valueFP) * 8 - 1));
     }
 
     // Return the float point number based on the bit representation.
@@ -109,7 +103,7 @@ int main() {
 }
 
 void testSinglePrecision() {
-    precisionFP<float> single;
+    FPBits<float> single;
 
     cout << "Default value: ";
     printBitSet(single.getValue());
@@ -142,7 +136,7 @@ void testSinglePrecision() {
 }
 
 void testDoublePrecision() {
-    precisionFP<double> doubleFP;
+    FPBits<double> doubleFP;
 
     cout << "Default value: ";
     printBitSet(doubleFP.getValue());
